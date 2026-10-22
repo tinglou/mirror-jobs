@@ -1,21 +1,25 @@
-name: Mirror mac‑tracker to Gitee
+name: Mirror mac-tracker to Gitee (SSH debug)
 on:
-  # 每天 10:10 定时同步，可修改 cron
   schedule:
-    - cron: '10 10 * * *'
-  # 支持网页手动点按钮触发同步
+    - cron: '0 */6 * * *'
   workflow_dispatch:
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - name: Mirror repo
-        uses: wearerequired/git-mirror-action@master
+      - name: 配置SSH（hanhancat的密钥）
         env:
           SSH_PRIVATE_KEY: ${{ secrets.GITEE_SSH_KEY }}
-        with:
-          source-repo: https://github.com/runZeroInc/mac-tracker.git
-          destination-repo: git@gitee.com:brightflight/mac-tracker.git
-          mirror-only: false
-          prune: true
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan gitee.com >> ~/.ssh/known_hosts
+      - name: 测试SSH身份
+        run: ssh -v -T git@gitee.com
+      - name: 镜像推送
+        run: |
+          git clone --mirror https://github.com/runZeroInc/mac-tracker.git mac-tracker.git
+          cd mac-tracker.git
+          git push --mirror git@gitee.com:brightflight/mac-tracker.git
