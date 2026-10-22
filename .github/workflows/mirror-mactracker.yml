@@ -1,4 +1,4 @@
-name: Mirror mac-tracker to Gitee (HTTPS PAT debug)
+name: Mirror mac-tracker to Gitee (HTTPS PAT fixed)
 on:
   schedule:
     - cron: '0 */6 * * *'
@@ -16,7 +16,7 @@ jobs:
         env:
           GITEE_PAT: ${{ secrets.GITEE_PAT }}
         run: |
-          git remote add gitee https://hanhancat:${GITEE_PAT}@gitee.com/brightflight/mac-tracker.git
+          git remote add gitee https://oauth2:${GITEE_PAT}@gitee.com/brightflight/mac-tracker.git
           git remote -v
           git ls-remote gitee
           git push --prune gitee refs/heads/*:refs/heads/* refs/tags/*:refs/tags/*
