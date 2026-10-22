@@ -1,25 +1,20 @@
-name: Mirror mac-tracker to Gitee (SSH debug)
+name: Mirror mac-tracker to Gitee (HTTPS PAT)
 on:
   schedule:
-    - cron: '0 */6 * * *'
+    - cron: '10 10 * * *'
   workflow_dispatch:
 
 jobs:
   mirror:
     runs-on: ubuntu-latest
     steps:
-      - name: 配置SSH（hanhancat的密钥）
+      - uses: actions/checkout@v4
+        with:
+          repository: runZeroInc/mac-tracker
+          fetch-depth: 0
+      - name: Push to Gitee
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.GITEE_SSH_KEY }}
+          GITEE_PAT: ${{ secrets.GITEE_PAT }}
         run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan gitee.com >> ~/.ssh/known_hosts
-      - name: 测试SSH身份
-        run: ssh -v -T git@gitee.com
-      - name: 镜像推送
-        run: |
-          git clone --mirror https://github.com/runZeroInc/mac-tracker.git mac-tracker.git
-          cd mac-tracker.git
-          git push --mirror git@gitee.com:brightflight/mac-tracker.git
+          git remote add gitee https://hanhancat:${GITEE_PAT}@gitee.com/brightflight/mac-tracker.git
+          git push --prune gitee refs/heads/*:refs/heads/* refs/tags/*:refs/tags/*
