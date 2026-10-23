@@ -1,0 +1,44 @@
+name: Mirror to AtomGit
+run-name: Mirror mac-tracker to AtomGit
+
+on:
+  schedule:
+    - cron: '0 16 * * *'  # UTC 16点 = 北京时间 00:00，每日同步一次
+  workflow_dispatch:       # 支持手动触发
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout upstream GitHub repo
+        uses: actions/checkout@v4
+        with:
+          repository: runZeroInc/mac-tracker
+          fetch-depth: 0
+          mirror: true
+
+      - name: Configure git
+        run: |
+          git config --global user.name "hanhancat"
+          git config --global user.email "atq_lRSoSkw4arF1.hanhancat@noreply.gitcode.com"
+          git config http.postBuffer 104857600
+          git config http.followRedirects false
+
+      - name: Add AtomGit remote
+        run: |
+          git remote remove atomgit || true
+          git remote add atomgit https://oauth2:${{ secrets.ATOMGIT_PAT }}@atomgit.com/hanhancat/mac-tracker.git
+
+      - name: Push mirror with retry
+        run: |
+          set -e
+          for i in {1..3}; do
+            echo "==== Push attempt $i ===="
+            if git push --prune atomgit refs/heads/*:refs/heads/* refs/tags/*:refs/tags/*; then
+              exit 0
+            fi
+            echo "Push failed, sleep 20s and retry..."
+            sleep 20
+          done
+          echo "All retries failed"
+          exit 1
