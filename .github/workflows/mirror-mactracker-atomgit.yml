@@ -15,7 +15,6 @@ jobs:
         with:
           repository: runZeroInc/mac-tracker
           fetch-depth: 0
-          mirror: true
 
       - name: Configure git
         run: |
