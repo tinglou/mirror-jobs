@@ -1,4 +1,4 @@
-name: Mirror to AtomGit
+name: Mirror mac-tracker to AtomGit
 run-name: Mirror mac-tracker to AtomGit
 
 on:
